@@ -19,5 +19,6 @@ use positions (x3,y3) to (x6,y6).
 Need python3.6+, sklearn, pandas
 
 ### Run instructions (optimal parameters)
-`python multiclass_svm.py --n_splits 5 --num_steps 20000 --reg 8 --kernel linear`
-`python multiclass_svm.py --n_splits 5 --num_steps 20000 --reg 16 --kernel poly`
+`$ python multiclass_svm.py --n_splits 5 --num_steps 20000 --reg 8 --kernel linear`
+
+`$ python multiclass_svm.py --n_splits 5 --num_steps 20000 --reg 16 --kernel poly`
