@@ -35,6 +35,7 @@ t2 = 2*np.pi*np.random.rand(Nt2,1)      # Angle
 testdata2 = np.concatenate((3+r2*np.cos(t2), r2*np.sin(t2)), axis=1) # points
 
 ## training linear SVM based on CVX optimizer
+import pdb; pdb.set_trace()
 X = np.concatenate((data1, data2), axis=0)
 y = np.concatenate((np.ones((N1, 1)), - np.ones((N2, 1))), axis=0)
 
