@@ -12,22 +12,28 @@ parser.add_argument(
     default='./studentspen-train.csv', 
     help="The filepath of the input file.") 
 parser.add_argument(
+    '--test_file',
+    '--t', 
+    type=str, 
+    default='./studentspen-test.csv', 
+    help="The filepath of the test file.") 
+parser.add_argument(
     '--n_splits',
     '--s', 
     type=int, 
-    default=4, 
+    default=5, 
     help="The number of folds in k-fold cross validation.") 
 parser.add_argument(
     '--num_steps',
     '--n', 
     type=int, 
-    default=1000, 
+    default=20000, 
     help="The number of steps to train in SGD.") 
 parser.add_argument(
     '--reg',
     '--r', 
     type=float, 
-    default=1, 
+    default=8, 
     help="The regularization parameter.") 
 parser.add_argument(
     '--kernel',
@@ -50,7 +56,7 @@ if __name__ == "__main__":
         X_train, X_val = data.iloc[train_idxs], data.iloc[val_idxs]
         y_train, y_val = digits.iloc[train_idxs], digits.iloc[val_idxs]
         
-        svm = SVM(args.kernel, args, num_classes=2)
+        svm = SVM(args.kernel, args, classes=[0,1,2,3,4,5,6,7,8,9])
         svm.train(X_train, y_train)
 
         y_pred = svm.predict(X_train)
@@ -60,3 +66,5 @@ if __name__ == "__main__":
     
     print("Validation error rate: {:.3f}".format(val_num_wrong/data.shape[0]))
     print("Training error rate: {:.3f}".format(train_num_wrong/(data.shape[0]*(args.n_splits - 1))))
+
+    #data_and_digits = pd.read_csv(args.test_file)

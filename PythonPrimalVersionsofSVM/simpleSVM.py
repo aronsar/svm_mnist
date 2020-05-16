@@ -5,7 +5,6 @@
 
 import numpy as np 
 import matplotlib
-matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import random
 import time
@@ -42,6 +41,7 @@ y = np.concatenate((np.ones((N1, 1)), - np.ones((N2, 1))), axis=0)
 w = cp.Variable((D, 1))
 b = cp.Variable()
 objective = cp.Minimize(cp.sum(cp.square(w)) * 0.5)
+import pdb; pdb.set_trace()
 constraints = [cp.multiply(y, (X @ w + b)) >= 1]
 prob = cp.Problem(objective, constraints)
 prob.solve()

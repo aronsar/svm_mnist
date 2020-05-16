@@ -70,12 +70,12 @@ if __name__ == "__main__":
     data_and_digits = pd.read_csv(args.input_file)
     source, target = extract_source_target(data_and_digits, args.source_problem, args.target_problem)
     source_data, target_data = source.iloc[:, :-1], target.iloc[:, :-1]
-    source_digits, target_digits, = target.iloc[:, -1], target.iloc[:, -1]
+    source_digits, target_digits, = source.iloc[:, -1], target.iloc[:, -1]
 
     num_wrong = defaultdict(lambda: defaultdict(int))
-    
+
     # first we train the source classifier
-    source_svm = SVM(args.kernel, args, num_classes=2)
+    source_svm = SVM(args.kernel, args, classes=[1,7])
     source_svm.train(source_data, source_digits)
 
     # then train all the target classifiers
@@ -85,24 +85,26 @@ if __name__ == "__main__":
         y_train, y_val = target_digits.iloc[train_idxs], target_digits.iloc[val_idxs]
         
         # no transfer learning is done here
-        n_svm = SVM(args.kernel, args, num_classes=2)
+        n_svm = SVM(args.kernel, args, classes=[1,9])
         n_svm.train(X_train, y_train)
-        num_wrong["no_transfer"]["train"] += len((n_svm.predict(X_train) - np.array(y_train)).nonzero()[0])
-        num_wrong["no_transfer"]["val"] += len((n_svm.predict(X_val) - np.array(y_val)).nonzero()[0])
+        num_wrong["no_transfer"]["train"] += len((np.array([1,9])[n_svm.predict(X_train)] - np.array(y_train)).nonzero()[0])
+        num_wrong["no_transfer"]["val"] += len((np.array([1,9])[n_svm.predict(X_val)] - np.array(y_val)).nonzero()[0])
 
 
         # hypothesis transfer learning
-        h_svm = SVM(args.kernel, args, num_classes=2)
-        h_svm.transfer(source_svm, X_train, y_train, type_="hypothesis")
-        num_wrong["hypothesis_transfer"]["train"] += len((h_svm.predict(X_train) - np.array(y_train)).nonzero()[0])
-        num_wrong["hypothesis_transfer"]["val"] += len((h_svm.predict(X_val) - np.array(y_val)).nonzero()[0])
+        h_svm = SVM(args.kernel, args, classes=[1,9])
+        h_svm.hypothesis_transfer(source_svm, X_train, y_train)
+        num_wrong["hypothesis_transfer"]["train"] += len((h_svm.predict_t(X_train) - np.array(y_train)).nonzero()[0])
+        num_wrong["hypothesis_transfer"]["val"] += len((h_svm.predict_t(X_val) - np.array(y_val)).nonzero()[0])
         
 
         # instance transfer learning
-        #i_svm = SVM(num_classes=2, args.kernel, args)
-        #i_svm.transfer(type_="instance", source_svm, X_train, y_train)
+        i_svm = SVM(args.kernel, args, classes=[1,9])
+        i_svm.instance_transfer(source_svm, X_train, y_train)
+        num_wrong["instance_transfer"]["train"] += len((i_svm.predict_t(X_train) - np.array(y_train)).nonzero()[0])
+        num_wrong["instance_transfer"]["val"] += len((i_svm.predict_t(X_val) - np.array(y_val)).nonzero()[0])
     
     for transfer_type in num_wrong.keys():
-        print(transfer_type + " training error rate: {:.3f}".format(num_wrong[transfer_type]["train"]/(data.shape[0]*(args.n_splits - 1))))
+        print(transfer_type + " training error rate: {:.3f}".format(num_wrong[transfer_type]["train"]/(target_data.shape[0]*(args.n_splits - 1))))
         print(transfer_type + " validation error rate: {:.3f}".format(num_wrong[transfer_type]["val"]/target_data.shape[0]))
         
