@@ -15,7 +15,7 @@ parser.add_argument(
     '--test_file',
     '--t', 
     type=str, 
-    default='./studentspen-test.csv', 
+    default=None, 
     help="The filepath of the test file.") 
 parser.add_argument(
     '--n_splits',
@@ -50,21 +50,34 @@ if __name__ == "__main__":
     digits = data_and_digits.iloc[:, -1]
     val_num_wrong = 0
     train_num_wrong = 0
-
-    kf = KFold(n_splits=args.n_splits, shuffle=True)
-    for train_idxs, val_idxs in kf.split(data):
-        X_train, X_val = data.iloc[train_idxs], data.iloc[val_idxs]
-        y_train, y_val = digits.iloc[train_idxs], digits.iloc[val_idxs]
-        
-        svm = SVM(args.kernel, args, classes=[0,1,2,3,4,5,6,7,8,9])
-        svm.train(X_train, y_train)
-
-        y_pred = svm.predict(X_train)
-        train_num_wrong += len((y_pred - np.array(y_train)).nonzero()[0])
-        y_pred = svm.predict(X_val)
-        val_num_wrong += len((y_pred - np.array(y_val)).nonzero()[0])
     
-    print("Validation error rate: {:.3f}".format(val_num_wrong/data.shape[0]))
-    print("Training error rate: {:.3f}".format(train_num_wrong/(data.shape[0]*(args.n_splits - 1))))
+    if not args.test_file: # training with validation
+        kf = KFold(n_splits=args.n_splits, shuffle=True)
+        for train_idxs, val_idxs in kf.split(data):
+            X_train, X_val = data.iloc[train_idxs], data.iloc[val_idxs]
+            y_train, y_val = digits.iloc[train_idxs], digits.iloc[val_idxs]
+            
+            svm = SVM(args.kernel, args, classes=[0,1,2,3,4,5,6,7,8,9])
+            svm.train(X_train, y_train)
 
-    #data_and_digits = pd.read_csv(args.test_file)
+            y_pred = svm.predict(X_train)
+            train_num_wrong += len((y_pred - np.array(y_train)).nonzero()[0])
+            y_pred = svm.predict(X_val)
+            val_num_wrong += len((y_pred - np.array(y_val)).nonzero()[0])
+        
+        print("Validation error rate: {:.3f}".format(val_num_wrong/data.shape[0]))
+        print("Training error rate: {:.3f}".format(train_num_wrong/(data.shape[0]*(args.n_splits - 1))))
+
+
+    if args.test_file: # training then testing
+        svm = SVM(args.kernel, args, classes=[0,1,2,3,4,5,6,7,8,9])
+        svm.train(data, digits)
+
+        test_data = pd.read_csv(args.test_file)
+        test_pred = svm.predict(test_data)
+
+        with open("./testoutput.csv", "w") as write_obj:
+            for pred in test_pred:
+                write_obj.write(str(pred) + "\n")
+        
+    pass
