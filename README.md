@@ -5,8 +5,8 @@ kernels to make predictions on a handwritten digits dataset. I also implemented
 hypothesis and instance transfer learning using cvxpy for quadratic
 programming.
 
-### About the dataset: The digits were written using a pen stylus by 40+
-different authors.
+### About the dataset: 
+The digits were written using a pen stylus by 40+ different authors.
 
 The x,y position of the pen was captured eight times hence x1,y1 is the
 position of the pen when it first touched the paper and x8,y8 is the last pen
